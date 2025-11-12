@@ -203,12 +203,19 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 		  
 		  // Handle errors
 		  function handleError(error) {
+			console.error('Geolocation error:', error);
 			let message = 'Unknown error';
 			let instructions = '';
+			const isInIframe = window.self !== window.top;
+			
 			switch(error.code) {
 			  case error.PERMISSION_DENIED:
 				message = '❌ Location permission denied';
-				instructions = 'Please allow location access in your browser settings. Look for the location icon in your browser address bar, or go to Settings → Privacy → Location Services.';
+				if (isInIframe) {
+				  instructions = 'This plugin runs in an iframe and needs separate location permission. Click the location icon in your browser address bar (near the URL) to allow location access for the GitHub Pages site, or open this page directly in a new tab to grant permission.';
+				} else {
+				  instructions = 'Please allow location access in your browser settings. Look for the location icon in your browser address bar, or go to Settings → Privacy → Location Services.';
+				}
 				break;
 			  case error.POSITION_UNAVAILABLE:
 				message = '❌ Location unavailable';
@@ -219,8 +226,33 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 				instructions = 'The location request took too long. Please try again or check your internet connection.';
 				break;
 			}
-			document.getElementById('status').innerHTML = message + '<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">' + instructions + '</small>';
+			let statusHTML = message + '<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px; line-height: 1.4;">' + instructions + '</small>';
+			
+			// Add a button to open in new tab if in iframe and permission denied
+			if (isInIframe && error.code === error.PERMISSION_DENIED) {
+			  statusHTML += '<br><button onclick="window.open(window.location.href, \'_blank\')" style="margin-top: 8px; background: #4285f4; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">Open in New Tab to Grant Permission</button>';
+			}
+			
+			document.getElementById('status').innerHTML = statusHTML;
 			document.getElementById('status').className = 'status-error';
+			
+			// Log to console for debugging
+			console.log('Error details:', {
+			  code: error.code,
+			  message: error.message,
+			  isInIframe: isInIframe,
+			  userAgent: navigator.userAgent,
+			  origin: window.location.origin
+			});
+		  }
+		  
+		  // Check if we're in an iframe
+		  function isInIframe() {
+			try {
+			  return window.self !== window.top;
+			} catch (e) {
+			  return true;
+			}
 		  }
 		  
 		  // Start tracking
@@ -231,19 +263,30 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 			  return;
 			}
 			
-			// Show permission request message
-			document.getElementById('status').innerHTML = '📍 Requesting location permission...<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">Please allow location access when prompted.</small>';
+			const inIframe = isInIframe();
+			console.log('Starting location tracking...', { inIframe, origin: window.location.origin });
+			
+			// Show permission request message with iframe-specific instructions
+			let permissionMsg = '📍 Requesting location permission...';
+			if (inIframe) {
+			  permissionMsg += '<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">If no prompt appears, click the location icon (📍) in your browser address bar to allow access for this site.</small>';
+			} else {
+			  permissionMsg += '<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">Please allow location access when prompted.</small>';
+			}
+			document.getElementById('status').innerHTML = permissionMsg;
 			document.getElementById('status').className = 'status-waiting';
 			
 			const options = {
 			  enableHighAccuracy: true,
-			  timeout: 10000,
+			  timeout: 15000, // Increased timeout for iframe scenarios
 			  maximumAge: 0
 			};
 			
 			// Get initial position
+			console.log('Calling getCurrentPosition...');
 			navigator.geolocation.getCurrentPosition(
 			  (position) => {
+				console.log('Location obtained successfully:', position);
 				updateLocation(position);
 				
 				// Start watching if enabled
@@ -256,7 +299,10 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 				  );
 				}
 			  },
-			  handleError,
+			  (error) => {
+				console.error('getCurrentPosition error:', error);
+				handleError(error);
+			  },
 			  options
 			);
 		  }
