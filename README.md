@@ -1,130 +1,145 @@
-# Real-Time Location Tracker
-### Glide Plugin - No API Keys Required
+# Auto Location Tracker
+### Glide Plugin - Real-Time Location Tracking with Map
 
-Display and track location on an interactive map using OpenStreetMap. Uses Glide's "Starting Point" column for reliable location updates, with browser geolocation as a fallback.
+**Automatically gets location from device** and displays on an interactive map with coordinates. Uses OpenStreetMap (same as Vercel app) - **no API keys needed**! Real-time tracking with auto-centering map. **No manual updates needed** - works automatically! Perfect for location tracking in Glide.
 
 ## Features
 
-- ✅ **Uses Glide's Starting Point** - Works with Glide's native location column
-- ✅ **Interactive Map** - OpenStreetMap integration (no API keys required!)
-- ✅ **Live Coordinates** - Shows latitude, longitude, and accuracy
-- ✅ **Continuous Updates** - Updates when Starting Point column changes
-- ✅ **Browser Geolocation Fallback** - Optional browser-based tracking
-- ✅ **Location History Trail** - Shows movement path on map
+- ✅ **Interactive Map** - Displays location on OpenStreetMap (same as Vercel app)
+- ✅ **Automatic Location** - Gets location directly from device (no manual updates!)
+- ✅ **Real-Time Updates** - Updates continuously using `watchPosition()` (like Vercel app)
+- ✅ **Auto-Centering** - Map automatically centers on location updates
+- ✅ **Location Marker** - Shows current location with accuracy circle
+- ✅ **Coordinates Display** - Shows coordinates in multiple formats (lat/lng, lng/lat, json)
+- ✅ **No API Keys** - Works entirely in browser with OpenStreetMap
+- ✅ **No Backend** - Everything runs in the plugin (no Firebase needed)
+- ✅ **No Glide Actions Needed** - Works automatically without setting up actions
 
 ## Setup
 
-### Step 1: Create Starting Point Column
-1. In your Glide table, create a **Location** column (type: "Location" or "Starting Point")
-2. Name it something like "Current Location" or "User Location"
-
-### Step 2: Set Up Continuous Updates (Recommended)
-1. Add an **Action** to your layout (button, automation, or on page load)
-2. Use **"Get Current Location"** action
-3. Set it to update your Starting Point column
-4. Configure the action to run periodically (e.g., every 5-10 seconds) using:
-   - **Automation** (runs automatically)
-   - **Button** (user triggers)
-   - **On Page Load** (updates when page loads)
-
-### Step 3: Add Plugin to Glide
+### Step 1: Add Plugin to Glide
 1. Create an **Experimental Code Column**
 2. Paste the URL: `https://xaviigna.github.io/-glide-location-tracker/`
 3. Configure parameters:
-   - **Starting Point**: Select your Starting Point column
-   - **Map Zoom**: "16" (or your preferred zoom level)
-   - **Use Browser Geolocation**: "true" (for fallback tracking)
-   - **Update Interval**: "1000" (milliseconds, for browser geolocation)
+   - **Use Browser Geolocation**: `"true"` (default - enables automatic location)
+   - **Output Format**: Choose format - `"lat,lng"` (default), `"lng,lat"`, or `"json"`
+   - **Update Interval**: `"1000"` (milliseconds - e.g., 1000 for 1 second, 5000 for 5 seconds)
 
-### Step 4: Display on Layout
+### Step 2: Display on Layout
 1. Add a **Web Embed** component to your layout
 2. Select the Experimental Code column as the source
-3. The map will display the location from your Starting Point column
+3. The map will display with your location and coordinates will update automatically!
+
+### Step 3: Grant Location Permission
+1. When the plugin loads, browser will prompt for location permission
+2. Click **"Allow"** to enable location tracking
+3. Coordinates will start updating automatically!
+
+### Step 4: Use Coordinates in Glide (Optional)
+1. The plugin displays coordinates in the Web Embed component
+2. Coordinates are also sent to Glide via postMessage (if you need to capture them)
+3. Use coordinates for mapping, calculations, or display
 
 ## Parameters
 
-- **startingPoint** (string): Glide location column (Starting Point) - Required for initial location
-- **latitude** (string): Latitude (optional - if not using Starting Point)
-- **longitude** (string): Longitude (optional - if not using Starting Point)
-- **mapZoom** (string): Map zoom level (1-19) - e.g., "16", "18"
-- **useBrowserGeolocation** (string): Enable browser geolocation for updates - "true" or "false"
-- **updateInterval** (string): Update interval in milliseconds - e.g., "1000", "5000"
+- **useBrowserGeolocation** (string): Enable browser geolocation - `"true"` (default) or `"false"`
+- **outputFormat** (string): Output format - `"lat,lng"` (default), `"lng,lat"`, or `"json"`
+- **updateInterval** (string): Update interval in milliseconds - `"1000"` (1 second), `"5000"` (5 seconds), etc.
 
-## How It Works
+## Output Formats
 
-### Primary Method: Glide's Starting Point
-1. **Glide gets location** using "Get Current Location" action (works reliably!)
-2. **Location is stored** in Starting Point column
-3. **Plugin reads** Starting Point column and displays on map
-4. **Glide updates** Starting Point periodically via actions
-5. **Plugin re-renders** automatically when Starting Point changes
-6. **Map updates** with new location continuously
+### Default: `"lat,lng"`
+Returns: `"40.7128,-74.0060"`
 
-### Fallback Method: Browser Geolocation
-1. Plugin tries browser Geolocation API (may be blocked in iframes)
-2. If permission granted, gets location directly from browser
-3. Updates map continuously using browser's location tracking
-4. Works alongside Glide's Starting Point (both can update simultaneously)
+### Format: `"lng,lat"`
+Returns: `"-74.0060,40.7128"`
 
-## Continuous Updates Setup
+### Format: `"json"`
+Returns: `{"lat":40.7128,"lng":-74.0060,"latitude":40.7128,"longitude":-74.0060}`
 
-To get continuous location updates:
+## Examples
 
-### Method 1: Glide Actions (Recommended)
-1. Create an automation or button action
-2. Use "Get Current Location" action
-3. Update your Starting Point column
-4. Set action to run every 5-10 seconds (using automation or timer)
-5. Plugin automatically updates when Starting Point changes
+### Example 1: Extract from Starting Point
+- **Starting Point**: `[Glide Location Column]`
+- **Output Format**: `"lat,lng"`
+- **Result**: `"40.7128,-74.0060"`
 
-### Method 2: Browser Geolocation (Fallback)
-1. Enable "Use Browser Geolocation" in plugin parameters
-2. Grant location permission for the GitHub Pages site
-3. Browser tracks location directly
-4. Updates map in real-time (if permission works)
+### Example 2: Combine Separate Lat/Lng
+- **Latitude**: `"40.7128"`
+- **Longitude**: `"-74.0060"`
+- **Output Format**: `"lat,lng"`
+- **Result**: `"40.7128,-74.0060"`
 
-### Method 3: Hybrid (Best)
-1. Use Starting Point for initial location (works reliably)
-2. Enable browser geolocation as fallback
-3. Both methods work together for maximum reliability
+### Example 3: JSON Output
+- **Starting Point**: `[Glide Location Column]`
+- **Output Format**: `"json"`
+- **Result**: `{"lat":40.7128,"lng":-74.0060,"latitude":40.7128,"longitude":-74.0060}`
 
 ## Use Cases
 
-- **Delivery Tracking** - Track delivery driver location in real-time
-- **Field Service** - Monitor field workers' locations
-- **Fitness Tracking** - Track running/walking routes
-- **Safety Apps** - Share live location in emergencies
-- **Asset Tracking** - Monitor vehicle/equipment location
+- **Combine Coordinates** - Merge lat and lng into a single string
+- **Format Coordinates** - Convert between different coordinate formats
+- **Extract from Location** - Get coordinates from Glide's Starting Point column
+- **Pass to Other Functions** - Use coordinates in Glide formulas or actions
+- **Display Coordinates** - Show coordinates in text components
 
-## Requirements
+## How It Works
 
-- User must grant location permission (for Glide actions)
-- HTTPS required (or localhost for development)
-- Modern browser with Geolocation API support
+1. **Plugin loads** - Returns HTML that runs in browser
+2. **Browser gets location** - Uses `navigator.geolocation.getCurrentPosition()` and `watchPosition()`
+3. **Coordinates update automatically** - Updates every X seconds (based on updateInterval)
+4. **Display coordinates** - Shows coordinates in the Web Embed component
+5. **Send to Glide** - Coordinates are also sent to Glide via postMessage (optional)
 
-## Privacy
+## Automatic Updates
 
-- Location data is only processed in the browser
-- No location data is sent to external servers
-- User controls location permission
-- Complies with browser privacy standards
+**Yes, coordinates are automatically pulled from device - no manual updates needed!**
+
+### How Automatic Updates Work:
+
+1. **Plugin loads** - HTML with JavaScript runs in browser
+2. **Browser requests location** - Asks user for location permission
+3. **User grants permission** - Location access is granted
+4. **Coordinates update automatically** - Updates every X seconds (configurable)
+5. **Display updates** - Coordinates display in real-time in the Web Embed component
+
+### No Setup Required:
+
+- ✅ **No Glide actions needed** - Works automatically without setting up actions
+- ✅ **No automations needed** - Browser handles location tracking
+- ✅ **No manual updates** - Coordinates update automatically
+- ✅ **Real-time** - Updates continuously every X seconds
+- ✅ **Works immediately** - Just add plugin and grant permission!
+
+### Update Frequency:
+
+- **Every 1 second** (`"1000"`) - Near real-time (good for tracking)
+- **Every 5 seconds** (`"5000"`) - Balanced (good battery life)
+- **Every 10 seconds** (`"10000"`) - Less frequent (battery efficient)
+- **Custom** - Set any interval you want (in milliseconds)
+
+### Important Notes:
+
+- ✅ **Automatic** - No manual updates or Glide actions needed
+- ✅ **Real-time** - Updates continuously from device
+- ✅ **Requires permission** - User must grant location permission
+- ⚠️ **Browser geolocation** - Uses browser's geolocation API (may be blocked in some browsers)
+- ⚠️ **HTTPS required** - Browser geolocation requires HTTPS (or localhost)
+
+## Supported Input Formats
+
+The plugin supports multiple input formats:
+
+- **Glide Location Column** - `{coordinates: [-74.0060, 40.7128]}`
+- **JSON String** - `'{"lat": 40.7128, "lng": -74.0060}'`
+- **Comma-Separated** - `"40.7128,-74.0060"`
+- **Separate Parameters** - `latitude: "40.7128"`, `longitude: "-74.0060"`
 
 ## Technical Details
 
-- Uses **Leaflet.js** for map rendering
-- Uses **OpenStreetMap** tiles (free, no API key)
-- Uses **Glide's Starting Point** column for location (primary method)
-- Uses browser's **Geolocation API** for location tracking (fallback)
-- Uses **postMessage** to communicate with Glide
-- Uses **localStorage** to store location data
 - Parses multiple location formats (JSON, coordinates array, lat/lng object)
-
-## Why Starting Point?
-
-Browser geolocation is often blocked in iframes (security restriction). Using Glide's "Starting Point" column:
-- ✅ **Works reliably** - Glide handles location permission
-- ✅ **No iframe issues** - Glide gets location natively
-- ✅ **Continuous updates** - Update Starting Point via actions
-- ✅ **Easy setup** - Just use Glide's built-in location actions
+- Handles Glide's location column format `[longitude, latitude]`
+- Validates coordinates (latitude: -90 to 90, longitude: -180 to 180)
+- Returns empty string if no valid location found
 
 Created by [@xaviigna](https://github.com/xaviigna) 🚀
