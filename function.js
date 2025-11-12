@@ -80,6 +80,12 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 		<div id="map"></div>
 		<div id="status" class="status-waiting">📍 Requesting location permission...<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">Please allow location access when prompted by your browser.</small></div>
 		<div id="coordinates">Lat: --<br>Lng: --<br>Accuracy: --</div>
+		<div id="permission-help" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.98); padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 2000; max-width: 400px; text-align: center;">
+		  <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #333;">📍 Location Permission Needed</h3>
+		  <p style="margin: 0 0 16px 0; font-size: 14px; color: #666; line-height: 1.5;">This plugin needs location permission for the GitHub Pages site. Click below to open it in a new tab and grant permission.</p>
+		  <button id="open-tab-btn" onclick="window.open('https://xaviigna.github.io/-glide-location-tracker/', '_blank')" style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 8px;">Open in New Tab</button>
+		  <button onclick="document.getElementById('permission-help').style.display='none'" style="background: #e0e0e0; color: #333; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">Close</button>
+		</div>
 		
 		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 	  <script>
