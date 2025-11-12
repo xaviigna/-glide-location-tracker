@@ -1,63 +1,28 @@
 [
 	{
 		"kind": "column",
-		"name": "HTML to PDF",
-		"description": "Allows you to preview and save HTML as PDFs. Add a web-embed component to your layout, then select this column as the source. If you want to level-up your Glide skills for free, head to https://loqode.com 🚀",
-		"author": "Marco Volpato <marco@loqode.com>",
+		"name": "Real-Time Location Tracker",
+		"description": "Track and display user's real-time location on an interactive map. Shows live coordinates, accuracy, and updates. Uses OpenStreetMap - no API keys required! Add a web-embed component to your layout, then select this column as the source.",
+		"author": "Your Name <your@email.com>",
 		"params": [
 			{
-				"name": "html",
-				"displayName": "HTML",
+				"name": "enableTracking",
+				"displayName": "Enable Real-Time Tracking (true/false)",
 				"type": "string"
 			},
 			{
-				"name": "fileName",
-				"displayName": "Filename",
+				"name": "updateInterval",
+				"displayName": "Update Interval (ms, e.g., 1000)",
 				"type": "string"
 			},
 			{
-				"name": "format",
-				"displayName": "Format (a4, letter, etc)",
+				"name": "mapZoom",
+				"displayName": "Map Zoom Level (1-19)",
 				"type": "string"
 			},
 			{
-				"name": "zoom",
-				"displayName": "Zoom (0.5 to 2)",
-				"type": "string"
-			},
-			{
-				"name": "orientation",
-				"displayName": "Orientation (portrait, landscape)",
-				"type": "string"
-			},
-			{
-				"name": "margin",
-				"displayName": "Margin (px)",
-				"type": "string"
-			},
-			{
-				"name": "breakBefore",
-				"displayName": "Break page before this (#ids, .classes, elements)",
-				"type": "string"
-			},
-			{
-				"name": "breakAfter",
-				"displayName": "Break page after this (#ids, .classes, elements)",
-				"type": "string"
-			},
-			{
-				"name": "breakAvoid",
-				"displayName": "Dont break page on this (#ids, .classes, elements)",
-				"type": "string"
-			},
-			{
-				"name": "fidelity",
-				"displayName": "Fidelity (low, standard, high)",
-				"type": "string"
-			},
-			{
-				"name": "customDimensions",
-				"displayName": "Custom Dimensions (e.g: 300,300)",
+				"name": "showHistory",
+				"displayName": "Show Location History Trail (true/false)",
 				"type": "string"
 			}
 		],

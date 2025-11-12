@@ -1,177 +1,294 @@
-window.function = function (html, fileName, format, zoom, orientation, margin, breakBefore, breakAfter, breakAvoid, fidelity, customDimensions) {
-	// FIDELITY MAPPING
-	const fidelityMap = {
-		low: 1,
-		standard: 1.5,
-		high: 2,
-	};
-
+window.function = function (enableTracking, updateInterval, mapZoom, showHistory) {
 	// DYNAMIC VALUES
-	html = html.value ?? "No HTML set.";
-	fileName = fileName.value ?? "file";
-	format = format.value ?? "a4";
-	zoom = zoom.value ?? "1";
-	orientation = orientation.value ?? "portrait";
-	margin = margin.value ?? "0";
-	breakBefore = breakBefore.value ? breakBefore.value.split(",") : [];
-	breakAfter = breakAfter.value ? breakAfter.value.split(",") : [];
-	breakAvoid = breakAvoid.value ? breakAvoid.value.split(",") : [];
-	quality = fidelityMap[fidelity.value] ?? 1.5;
-	customDimensions = customDimensions.value ? customDimensions.value.split(",").map(Number) : null;
-
-	// DOCUMENT DIMENSIONS
-	const formatDimensions = {
-		a0: [4967, 7022],
-		a1: [3508, 4967],
-		a2: [2480, 3508],
-		a3: [1754, 2480],
-		a4: [1240, 1754],
-		a5: [874, 1240],
-		a6: [620, 874],
-		a7: [437, 620],
-		a8: [307, 437],
-		a9: [219, 307],
-		a10: [154, 219],
-		b0: [5906, 8350],
-		b1: [4175, 5906],
-		b2: [2953, 4175],
-		b3: [2085, 2953],
-		b4: [1476, 2085],
-		b5: [1039, 1476],
-		b6: [738, 1039],
-		b7: [520, 738],
-		b8: [366, 520],
-		b9: [260, 366],
-		b10: [183, 260],
-		c0: [5415, 7659],
-		c1: [3827, 5415],
-		c2: [2705, 3827],
-		c3: [1913, 2705],
-		c4: [1352, 1913],
-		c5: [957, 1352],
-		c6: [673, 957],
-		c7: [478, 673],
-		c8: [337, 478],
-		c9: [236, 337],
-		c10: [165, 236],
-		dl: [650, 1299],
-		letter: [1276, 1648],
-		government_letter: [1199, 1577],
-		legal: [1276, 2102],
-		junior_legal: [1199, 750],
-		ledger: [2551, 1648],
-		tabloid: [1648, 2551],
-		credit_card: [319, 508],
-	};
-
-	// GET FINAL DIMESIONS FROM SELECTED FORMAT
-	const dimensions = customDimensions || formatDimensions[format];
-	const finalDimensions = dimensions.map((dimension) => Math.round(dimension / zoom));
+	enableTracking = enableTracking.value ?? "true";
+	updateInterval = updateInterval.value ?? "1000";
+	mapZoom = mapZoom.value ?? "16";
+	showHistory = showHistory.value ?? "false";
 
 	// LOG SETTINGS TO CONSOLE
 	console.log(
-		`Filename: ${fileName}\n` +
-			`Format: ${format}\n` +
-			`Dimensions: ${dimensions}\n` +
-			`Zoom: ${zoom}\n` +
-			`Final Dimensions: ${finalDimensions}\n` +
-			`Orientation: ${orientation}\n` +
-			`Margin: ${margin}\n` +
-			`Break before: ${breakBefore}\n` +
-			`Break after: ${breakAfter}\n` +
-			`Break avoid: ${breakAvoid}\n` +
-			`Quality: ${quality}`
+		`Enable Tracking: ${enableTracking}\n` +
+			`Update Interval: ${updateInterval}ms\n` +
+			`Map Zoom: ${mapZoom}\n` +
+			`Show History: ${showHistory}`
 	);
 
 	const customCSS = `
+	* { margin: 0; padding: 0; box-sizing: border-box; }
 	body {
-	  margin: 0!important
+	  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	  overflow: hidden;
 	}
-  
-	button#download {
-	  position: fixed;
-	  border-radius: 0.5rem;
-	  font-size: 14px;
-	  font-weight: 600;
-	  line-height: 1.5rem;
-	  color: #0d0d0d;
+	#map { 
+	  width: 100%; 
+	  height: 100vh; 
+	}
+	#status {
+	  position: absolute;
+	  top: 10px;
+	  left: 10px;
+	  background: rgba(255, 255, 255, 0.95);
+	  padding: 12px 16px;
+	  border-radius: 8px;
+	  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+	  z-index: 1000;
+	  font-size: 13px;
+	  max-width: 300px;
+	}
+	#coordinates {
+	  position: absolute;
+	  bottom: 10px;
+	  left: 10px;
+	  background: rgba(0, 0, 0, 0.85);
+	  color: white;
+	  padding: 12px 16px;
+	  border-radius: 8px;
+	  z-index: 1000;
+	  font-size: 12px;
+	  font-family: 'Monaco', 'Courier New', monospace;
+	  line-height: 1.6;
+	}
+	.status-active { color: #16a34a; }
+	.status-error { color: #dc2626; }
+	.status-waiting { color: #ea580c; }
+	button {
+	  background: #4285f4;
+	  color: white;
 	  border: none;
-	  font-family: 'Inter';
-	  padding: 0px 12px;
-	  height: 32px;
-	  background: #ffffff;
-	  top: 8px;
-	  right: 8px;
-	  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 2.5px rgba(0, 0, 0, 0.1);
+	  padding: 8px 16px;
+	  border-radius: 6px;
 	  cursor: pointer;
+	  font-size: 12px;
+	  margin-top: 8px;
 	}
-  
-	button#download:hover {
-	  background: #f5f5f5;
-	  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.06), 0 6px 12px -3px rgba(0, 0, 0, 0.1);
-	}
-  
-	button#download.downloading {
-	  color: #ea580c;
-	}
-  
-	button#download.done {
-	  color: #16a34a;
-	}
-  
-	::-webkit-scrollbar {
-	  width: 5px;
-	  background-color: rgb(0 0 0 / 8%);
-	}
-  
-	::-webkit-scrollbar-thumb {
-	  background-color: rgb(0 0 0 / 32%);
-	  border-radius: 4px;
-	}
+	button:hover { background: #357ae8; }
+	button:disabled { background: #ccc; cursor: not-allowed; }
 	`;
 
 	// HTML THAT IS RETURNED AS A RENDERABLE URL
 	const originalHTML = `
-	  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+	  <!DOCTYPE html>
+	  <html>
+	  <head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 	  <style>${customCSS}</style>
-	  <div class="main">
-	  <div class="header">
-		<button class="button" id="download">Download</button>
-	  </div>
-	  <div id="content">${html}</div>
-	  </div>
+	  </head>
+	  <body>
+		<div id="map"></div>
+		<div id="status" class="status-waiting">⏳ Requesting location...</div>
+		<div id="coordinates">Lat: --<br>Lng: --<br>Accuracy: --</div>
+		
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 	  <script>
-	  document.getElementById('download').addEventListener('click', function() {
-		var element = document.getElementById('content');
-		var button = this;
-		button.innerText = 'Downloading...';
-		button.className = 'downloading';
-  
-		var opt = {
-		pagebreak: { mode: ['css'], before: ${JSON.stringify(breakBefore)}, after: ${JSON.stringify(breakAfter)}, avoid: ${JSON.stringify(breakAvoid)} },
-		margin: ${margin},
-		filename: ${JSON.stringify(fileName)},
-		html2canvas: {
-		  useCORS: true,
-		  scale: ${quality}
-		},
-		jsPDF: {
-		  unit: 'px',
-		  orientation: '${orientation}',
-		  format: [${finalDimensions}],
-		  hotfixes: ['px_scaling']
-		}
-		};
-		html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-		button.innerText = 'Done 🎉';
-		button.className = 'done';
-		setTimeout(function() { 
-		  button.innerText = 'Download';
-		  button.className = ''; 
-		}, 2000);
-		}).save();
-	  });
+		  let map;
+		  let marker;
+		  let circle;
+		  let watchId;
+		  let locationHistory = [];
+		  let isTracking = false;
+		  let polyline;
+		  
+		  // Initialize map
+		  function initMap(lat, lng) {
+			map = L.map('map').setView([lat, lng], ${mapZoom});
+			
+			// OpenStreetMap tiles (free, no API key required)
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			  attribution: '© OpenStreetMap contributors',
+			  maxZoom: 19
+			}).addTo(map);
+			
+			// Create marker
+			marker = L.marker([lat, lng], {
+			  icon: L.divIcon({
+				className: 'custom-marker',
+				html: '<div style="background: #4285f4; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
+				iconSize: [20, 20],
+				iconAnchor: [10, 10]
+			  })
+			}).addTo(map);
+			
+			// Create accuracy circle
+			circle = L.circle([lat, lng], {
+			  radius: 50,
+			  color: '#4285f4',
+			  fillColor: '#4285f4',
+			  fillOpacity: 0.1,
+			  weight: 2
+			}).addTo(map);
+			
+			// Create polyline for history if enabled
+			if ('${showHistory}' === 'true') {
+			  polyline = L.polyline([], {
+				color: '#4285f4',
+				weight: 3,
+				opacity: 0.5
+			  }).addTo(map);
+			}
+		  }
+		  
+		  // Update location
+		  function updateLocation(position) {
+			const lat = position.coords.latitude;
+			const lng = position.coords.longitude;
+			const accuracy = position.coords.accuracy;
+			const timestamp = new Date(position.timestamp);
+			
+			// Store in history
+			locationHistory.push({ lat, lng, accuracy, timestamp: Date.now() });
+			
+			// Update display
+			document.getElementById('coordinates').innerHTML = 
+			  \`Lat: \${lat.toFixed(6)}<br>
+			   Lng: \${lng.toFixed(6)}<br>
+			   Accuracy: \${Math.round(accuracy)}m<br>
+			   Updates: \${locationHistory.length}<br>
+			   Time: \${timestamp.toLocaleTimeString()}\`;
+			
+			// Update map
+			if (map) {
+			  map.setView([lat, lng], map.getZoom());
+			  marker.setLatLng([lat, lng]);
+			  circle.setLatLng([lat, lng]);
+			  circle.setRadius(accuracy);
+			  
+			  // Update history trail if enabled
+			  if ('${showHistory}' === 'true' && polyline) {
+				const path = locationHistory.map(loc => [loc.lat, loc.lng]);
+				polyline.setLatLngs(path);
+			  }
+			} else {
+			  initMap(lat, lng);
+			}
+			
+			// Update status
+			document.getElementById('status').innerHTML = 
+			  \`✅ Tracking active • \${locationHistory.length} updates\`;
+			document.getElementById('status').className = 'status-active';
+			
+			// SEND TO GLIDE VIA POSTMESSAGE
+			if (window.parent && window.parent !== window) {
+			  window.parent.postMessage({
+				type: 'location-update',
+				data: {
+				  latitude: lat,
+				  longitude: lng,
+				  accuracy: accuracy,
+				  timestamp: position.timestamp,
+				  speed: position.coords.speed || null,
+				  heading: position.coords.heading || null
+				}
+			  }, '*');
+			}
+			
+			// STORE IN LOCALSTORAGE
+			localStorage.setItem('lastLocation', JSON.stringify({
+			  lat, lng, accuracy, 
+			  timestamp: position.timestamp,
+			  speed: position.coords.speed,
+			  heading: position.coords.heading
+			}));
+			
+			// Store history (last 100 points)
+			if (locationHistory.length > 100) {
+			  locationHistory = locationHistory.slice(-100);
+			}
+			if ('${showHistory}' === 'true') {
+			  localStorage.setItem('locationHistory', JSON.stringify(locationHistory.slice(-50)));
+			}
+		  }
+		  
+		  // Handle errors
+		  function handleError(error) {
+			let message = 'Unknown error';
+			switch(error.code) {
+			  case error.PERMISSION_DENIED:
+				message = '❌ Location permission denied. Please enable location access.';
+				break;
+			  case error.POSITION_UNAVAILABLE:
+				message = '❌ Location unavailable';
+				break;
+			  case error.TIMEOUT:
+				message = '⏱️ Location request timeout';
+				break;
+			}
+			document.getElementById('status').innerHTML = message;
+			document.getElementById('status').className = 'status-error';
+		  }
+		  
+		  // Start tracking
+		  function startTracking() {
+			if (!navigator.geolocation) {
+			  document.getElementById('status').innerHTML = '❌ Geolocation not supported';
+			  document.getElementById('status').className = 'status-error';
+			  return;
+			}
+			
+			const options = {
+			  enableHighAccuracy: true,
+			  timeout: 5000,
+			  maximumAge: 0
+			};
+			
+			// Get initial position
+			navigator.geolocation.getCurrentPosition(
+			  (position) => {
+				updateLocation(position);
+				
+				// Start watching if enabled
+				if ('${enableTracking}' === 'true' && !isTracking) {
+				  isTracking = true;
+				  watchId = navigator.geolocation.watchPosition(
+					updateLocation,
+					handleError,
+					{ ...options, timeout: parseInt('${updateInterval}') || 1000 }
+				  );
+				}
+			  },
+			  handleError,
+			  options
+			);
+		  }
+		  
+		  // Stop tracking
+		  function stopTracking() {
+			if (watchId) {
+			  navigator.geolocation.clearWatch(watchId);
+			  watchId = null;
+			  isTracking = false;
+			  document.getElementById('status').innerHTML = '⏸️ Tracking stopped';
+			  document.getElementById('status').className = 'status-waiting';
+			}
+		  }
+		  
+		  // Listen for messages from Glide
+		  window.addEventListener('message', function(event) {
+			if (event.data && event.data.type === 'stop-tracking') {
+			  stopTracking();
+			} else if (event.data && event.data.type === 'start-tracking') {
+			  startTracking();
+			} else if (event.data && event.data.type === 'get-location') {
+			  // Send current location on request
+			  const lastLoc = localStorage.getItem('lastLocation');
+			  if (lastLoc) {
+				window.parent.postMessage({
+				  type: 'location-response',
+				  data: JSON.parse(lastLoc)
+				}, '*');
+			  }
+			}
+		  });
+		  
+		  // Start on load
+		  window.addEventListener('load', startTracking);
+		  
+		  // Cleanup
+		  window.addEventListener('beforeunload', stopTracking);
 	  </script>
+	  </body>
+	  </html>
 	  `;
 	var encodedHtml = encodeURIComponent(originalHTML);
 	return "data:text/html;charset=utf-8," + encodedHtml;
