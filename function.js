@@ -234,9 +234,9 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 			}
 			let statusHTML = message + '<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px; line-height: 1.4;">' + instructions + '</small>';
 			
-			// Add a button to open in new tab if in iframe and permission denied
+			// Add a button to show help modal if in iframe and permission denied
 			if (isInIframe && error.code === error.PERMISSION_DENIED) {
-			  statusHTML += '<br><button onclick="window.open(window.location.href, \'_blank\')" style="margin-top: 8px; background: #4285f4; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">Open in New Tab to Grant Permission</button>';
+			  statusHTML += '<br><button onclick="document.getElementById(\'permission-help\').style.display=\'block\'" style="margin-top: 8px; background: #4285f4; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">Get Help with Permission</button>';
 			}
 			
 			document.getElementById('status').innerHTML = statusHTML;
