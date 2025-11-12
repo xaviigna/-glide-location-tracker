@@ -3,7 +3,7 @@
 		"kind": "column",
 		"name": "Real-Time Location Tracker",
 		"description": "Track and display user's real-time location on an interactive map. Shows live coordinates, accuracy, and updates. Uses OpenStreetMap - no API keys required! Add a web-embed component to your layout, then select this column as the source.",
-		"author": "Your Name <your@email.com>",
+		"author": "xaviigna",
 		"params": [
 			{
 				"name": "enableTracking",
