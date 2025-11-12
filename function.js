@@ -311,12 +311,11 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 			coordinatesEl.textContent = formatted;
 			
 			// Update status
-			statusEl.innerHTML = \`
-				<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-				</svg>
-				<span>Tracking active</span>
-			\`;
+			const successHtml = '<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+				'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+				'</svg>' +
+				'<span>Tracking active</span>';
+			statusEl.innerHTML = successHtml;
 			statusEl.className = 'status success';
 			
 			// Update details
@@ -383,24 +382,24 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 					// In iframe - show helpful message with solution
 					loadingEl.style.display = 'none';
 					helpEl.style.display = 'block';
-					helpEl.querySelector('p').innerHTML = 
-						'<strong>Location permission is blocked in iframe.</strong><br><br>' +
-						'<strong>Solution:</strong> Glide\'s Web Embed needs the <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px;">allow="geolocation"</code> attribute.<br><br>' +
+					const helpText = '<strong>Location permission is blocked in iframe.</strong><br><br>' +
+						'<strong>Solution:</strong> Glide\\'s Web Embed needs the <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px;">allow="geolocation"</code> attribute.<br><br>' +
 						'<strong>Quick Fix:</strong> Click the <strong>"Request Permission"</strong> button and allow location access when prompted.<br><br>' +
-						'<small style="color: #999;">Note: If permission is still denied, you may need to check browser settings or use Glide\'s native location actions instead.</small>';
+						'<small style="color: #999;">Note: If permission is still denied, you may need to check browser settings or use Glide\\'s native location actions instead.</small>';
+					helpEl.querySelector('p').innerHTML = helpText;
 				} else {
 					// Not in iframe - should work, just need permission
 					loadingEl.style.display = 'none';
 					helpEl.style.display = 'block';
-					helpEl.querySelector('p').innerHTML = 
-						'Location permission is required. <strong>Click "Request Permission"</strong> to request access again, or check your browser\'s location settings.';
+					const helpText2 = 'Location permission is required. <strong>Click "Request Permission"</strong> to request access again, or check your browser\\'s location settings.';
+					helpEl.querySelector('p').innerHTML = helpText2;
 				}
 			} else if (error.code === 2) {
 				message = 'Location unavailable - Check GPS/network';
 			} else if (error.code === 3) {
 				message = 'Timeout - Retrying...';
 				// Don't show help for timeout, just retry
-				setTimeout(() => {
+		setTimeout(function() { 
 					if (navigator.geolocation) {
 						navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError);
 					}
@@ -408,17 +407,17 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 				return;
 			}
 			
-			statusEl.innerHTML = \`
-				<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-				</svg>
-				<span>\${message}</span>
-			\`;
+			// Update status with error message
+			const statusHtml = '<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+				'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+				'</svg>' +
+				'<span>' + message + '</span>';
+			statusEl.innerHTML = statusHtml;
 			statusEl.className = 'status error';
 			
 			// Show help after a delay if permission denied
 			if (showHelp && !isInIframe()) {
-				setTimeout(() => {
+				setTimeout(function() {
 					if (loadingEl.style.display !== 'none') {
 						loadingEl.style.display = 'none';
 						helpEl.style.display = 'block';
@@ -431,12 +430,11 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 		function startTracking() {
 			if (!navigator.geolocation) {
 				const statusEl = document.getElementById('status');
-				statusEl.innerHTML = \`
-					<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-					</svg>
-					<span>Geolocation not supported</span>
-				\`;
+				const errorHtml = '<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+					'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+					'</svg>' +
+					'<span>Geolocation not supported</span>';
+				statusEl.innerHTML = errorHtml;
 				statusEl.className = 'status error';
 				document.getElementById('loading').style.display = 'none';
 				return;
@@ -448,12 +446,11 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 			
 			// Update status
 			const statusEl = document.getElementById('status');
-			statusEl.innerHTML = \`
-				<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-				</svg>
-				<span>Requesting location...</span>
-			\`;
+			const waitingHtml = '<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+				'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+				'</svg>' +
+				'<span>Requesting location...</span>';
+			statusEl.innerHTML = waitingHtml;
 			statusEl.className = 'status waiting';
 			
 			// Get initial position
