@@ -126,6 +126,52 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 			z-index: 2000;
 			text-align: center;
 		}
+		.permission-help {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: white;
+			padding: 24px;
+			border-radius: 12px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+			z-index: 2000;
+			max-width: 400px;
+			text-align: center;
+		}
+		.permission-help h3 {
+			font-size: 18px;
+			font-weight: 600;
+			margin-bottom: 12px;
+			color: #1a1a1a;
+		}
+		.permission-help p {
+	  font-size: 14px;
+			color: #666;
+			line-height: 1.6;
+			margin-bottom: 16px;
+		}
+		.permission-help button {
+			background: #4285f4;
+			color: white;
+	  border: none;
+			padding: 10px 20px;
+			border-radius: 6px;
+			font-size: 14px;
+			font-weight: 500;
+	  cursor: pointer;
+			margin: 4px;
+		}
+		.permission-help button:hover {
+			background: #357ae8;
+		}
+		.permission-help button.secondary {
+			background: #f5f5f5;
+			color: #333;
+		}
+		.permission-help button.secondary:hover {
+			background: #e5e5e5;
+		}
 	</style>
 </head>
 <body>
@@ -148,6 +194,13 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 	<div id="loading" class="loading" style="display: block;">
 		<div style="margin-bottom: 8px;">📍</div>
 		<div style="font-size: 14px; color: #666;">Loading map...</div>
+	</div>
+	<div id="permission-help" class="permission-help" style="display: none;">
+		<h3>📍 Location Permission Needed</h3>
+		<p>To track your location, please allow location access in your browser.</p>
+		<p style="font-size: 12px; color: #999; margin-top: 8px;">Click the button below to request permission again, or check your browser settings.</p>
+		<button onclick="requestPermission()">Request Permission</button>
+		<button class="secondary" onclick="document.getElementById('permission-help').style.display='none'">Dismiss</button>
 	</div>
 	<div class="coordinates-panel" style="display: none;">
 		<div id="coordinates" class="coordinates">--</div>
@@ -296,17 +349,65 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 			updateCoordinates(lat, lng, accuracy);
 		}
 		
+		// Check if we're in an iframe
+		function isInIframe() {
+			try {
+				return window.self !== window.top;
+			} catch (e) {
+				return true;
+			}
+		}
+		
+		// Request permission (called by button)
+		function requestPermission() {
+			document.getElementById('permission-help').style.display = 'none';
+			document.getElementById('loading').style.display = 'block';
+			startTracking();
+		}
+		
 		// Handle geolocation error
 		function onLocationError(error) {
 			const statusEl = document.getElementById('status');
+			const loadingEl = document.getElementById('loading');
+			const helpEl = document.getElementById('permission-help');
 			let message = 'Location unavailable';
+			let showHelp = false;
+			
 			if (error.code === 1) {
-				message = 'Permission denied - Please allow location access';
+				// Permission denied
+				message = 'Permission denied';
+				showHelp = true;
+				
+				// Check if we're in an iframe
+				if (isInIframe()) {
+					// In iframe - show helpful message with solution
+					loadingEl.style.display = 'none';
+					helpEl.style.display = 'block';
+					helpEl.querySelector('p').innerHTML = 
+						'<strong>Location permission is blocked in iframe.</strong><br><br>' +
+						'<strong>Solution:</strong> Glide\'s Web Embed needs the <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px;">allow="geolocation"</code> attribute.<br><br>' +
+						'<strong>Quick Fix:</strong> Click the <strong>"Request Permission"</strong> button and allow location access when prompted.<br><br>' +
+						'<small style="color: #999;">Note: If permission is still denied, you may need to check browser settings or use Glide\'s native location actions instead.</small>';
+				} else {
+					// Not in iframe - should work, just need permission
+					loadingEl.style.display = 'none';
+					helpEl.style.display = 'block';
+					helpEl.querySelector('p').innerHTML = 
+						'Location permission is required. <strong>Click "Request Permission"</strong> to request access again, or check your browser\'s location settings.';
+				}
 			} else if (error.code === 2) {
 				message = 'Location unavailable - Check GPS/network';
 			} else if (error.code === 3) {
 				message = 'Timeout - Retrying...';
+				// Don't show help for timeout, just retry
+				setTimeout(() => {
+					if (navigator.geolocation) {
+						navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError);
+					}
+		}, 2000);
+				return;
 			}
+			
 			statusEl.innerHTML = \`
 				<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -315,12 +416,15 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 			\`;
 			statusEl.className = 'status error';
 			
-			// Still try to get location
-			setTimeout(() => {
-				if (navigator.geolocation) {
-					navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError);
-				}
-			}, 2000);
+			// Show help after a delay if permission denied
+			if (showHelp && !isInIframe()) {
+				setTimeout(() => {
+					if (loadingEl.style.display !== 'none') {
+						loadingEl.style.display = 'none';
+						helpEl.style.display = 'block';
+					}
+				}, 3000);
+			}
 		}
 		
 		// Start getting location
@@ -338,13 +442,27 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 				return;
 			}
 			
+			// Hide help if showing
+			document.getElementById('permission-help').style.display = 'none';
+			document.getElementById('loading').style.display = 'block';
+			
+			// Update status
+			const statusEl = document.getElementById('status');
+			statusEl.innerHTML = \`
+				<svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+				</svg>
+				<span>Requesting location...</span>
+			\`;
+			statusEl.className = 'status waiting';
+			
 			// Get initial position
 			navigator.geolocation.getCurrentPosition(
 				onLocationSuccess,
 				onLocationError,
 				{
 					enableHighAccuracy: true,
-					timeout: 10000,
+					timeout: 15000, // Increased timeout
 					maximumAge: 0
 				}
 			);
@@ -361,6 +479,7 @@ window.function = function (useBrowserGeolocation, outputFormat, updateInterval)
 			);
 			
 			console.log('✅ Location tracking started - Using watchPosition (like Vercel app)');
+			console.log('📍 In iframe:', isInIframe());
 		}
 		
 		// Start tracking when page loads
