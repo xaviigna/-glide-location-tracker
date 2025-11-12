@@ -61,6 +61,7 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 	  font-size: 12px;
 	  margin-top: 8px;
 	}
+
 	button:hover { background: #357ae8; }
 	button:disabled { background: #ccc; cursor: not-allowed; }
 	`;
@@ -77,7 +78,7 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 	  </head>
 	  <body>
 		<div id="map"></div>
-		<div id="status" class="status-waiting">⏳ Requesting location...</div>
+		<div id="status" class="status-waiting">📍 Requesting location permission...<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">Please allow location access when prompted by your browser.</small></div>
 		<div id="coordinates">Lat: --<br>Lng: --<br>Accuracy: --</div>
 		
 		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -203,32 +204,40 @@ window.function = function (enableTracking, updateInterval, mapZoom, showHistory
 		  // Handle errors
 		  function handleError(error) {
 			let message = 'Unknown error';
+			let instructions = '';
 			switch(error.code) {
 			  case error.PERMISSION_DENIED:
-				message = '❌ Location permission denied. Please enable location access.';
+				message = '❌ Location permission denied';
+				instructions = 'Please allow location access in your browser settings. Look for the location icon in your browser address bar, or go to Settings → Privacy → Location Services.';
 				break;
 			  case error.POSITION_UNAVAILABLE:
 				message = '❌ Location unavailable';
+				instructions = 'Your device cannot determine your location. Check that GPS/Location Services are enabled in your device settings.';
 				break;
 			  case error.TIMEOUT:
 				message = '⏱️ Location request timeout';
+				instructions = 'The location request took too long. Please try again or check your internet connection.';
 				break;
 			}
-			document.getElementById('status').innerHTML = message;
+			document.getElementById('status').innerHTML = message + '<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">' + instructions + '</small>';
 			document.getElementById('status').className = 'status-error';
 		  }
 		  
 		  // Start tracking
 		  function startTracking() {
 			if (!navigator.geolocation) {
-			  document.getElementById('status').innerHTML = '❌ Geolocation not supported';
+			  document.getElementById('status').innerHTML = '❌ Geolocation not supported<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">Your browser does not support location services.</small>';
 			  document.getElementById('status').className = 'status-error';
 			  return;
 			}
 			
+			// Show permission request message
+			document.getElementById('status').innerHTML = '📍 Requesting location permission...<br><small style="color: #666; font-size: 11px; display: block; margin-top: 5px;">Please allow location access when prompted.</small>';
+			document.getElementById('status').className = 'status-waiting';
+			
 			const options = {
 			  enableHighAccuracy: true,
-			  timeout: 5000,
+			  timeout: 10000,
 			  maximumAge: 0
 			};
 			
