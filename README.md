@@ -1,163 +1,180 @@
-# Auto Location Tracker
-### Glide Plugin - Real-Time Location Tracking with Map
+# Custom AI Plugin for Glide
+### OpenAI & Anthropic Support - Replace Glide AI
 
-**Automatically gets location from device** and displays on an interactive map with coordinates. Uses OpenStreetMap (same as Vercel app) - **no API keys needed**! Real-time tracking with auto-centering map. **No manual updates needed** - works automatically! Perfect for location tracking in Glide.
+Use any AI model (OpenAI GPT-4, Anthropic Claude) directly in Glide with custom prompts. Supports multiple models and full parameter control.
 
 ## Features
 
-- ✅ **Interactive Map** - Displays location on OpenStreetMap (same as Vercel app)
-- ✅ **Automatic Location** - Gets location directly from device (no manual updates!)
-- ✅ **Real-Time Updates** - Updates continuously using `watchPosition()` (like Vercel app)
-- ✅ **Auto-Centering** - Map automatically centers on location updates
-- ✅ **Location Marker** - Shows current location with accuracy circle
-- ✅ **Coordinates Display** - Shows coordinates in multiple formats (lat/lng, lng/lat, json)
-- ✅ **No API Keys** - Works entirely in browser with OpenStreetMap
-- ✅ **No Backend** - Everything runs in the plugin (no Firebase needed)
-- ✅ **No Glide Actions Needed** - Works automatically without setting up actions
+- ✅ **Multiple AI Models** - OpenAI GPT-4, GPT-3.5, Anthropic Claude
+- ✅ **Custom Prompts** - Full control over AI prompts
+- ✅ **Temperature Control** - Adjust creativity (0.0-2.0)
+- ✅ **Token Limits** - Control response length
+- ✅ **Direct API Calls** - Works directly in plugin (no backend needed for testing)
+- ✅ **Error Handling** - Clear error messages
+
+## ⚠️ Security Note
+
+**This plugin accepts API keys as parameters for experimentation.** 
+- ⚠️ **Not secure for production** - API keys will be visible in Glide
+- ✅ **Fine for testing** - Great for experimentation
+- 🔒 **For production** - Use a backend proxy (Vercel/Netlify function)
 
 ## Setup
 
-### Step 1: Add Plugin to Glide
+### Step 1: Create New Repository/Folder
+
+Create a new folder for the AI plugin (separate from location tracker):
+
+```bash
+mkdir glide-ai-plugin
+cd glide-ai-plugin
+```
+
+### Step 2: Add Files
+
+You'll need these files:
+- `index.html` - Entry point
+- `function.js` - AI logic (uses `ai-function.js`)
+- `driver.js` - Communication bridge (same as location tracker)
+- `glide.json` - Plugin configuration (uses `ai-glide.json`)
+
+### Step 3: Configure Plugin in Glide
+
 1. Create an **Experimental Code Column**
-2. Paste the URL: `https://xaviigna.github.io/-glide-location-tracker/`
+2. Paste your GitHub Pages URL
 3. Configure parameters:
-   - **Use Browser Geolocation**: `"true"` (default - enables automatic location)
-   - **Output Format**: Choose format - `"lat,lng"` (default), `"lng,lat"`, or `"json"`
-   - **Update Interval**: `"1000"` (milliseconds - e.g., 1000 for 1 second, 5000 for 5 seconds)
+   - **Prompt**: Your AI prompt (e.g., "Summarize this text...")
+   - **API Key**: Your OpenAI or Anthropic API key
+   - **Model**: Model name (e.g., "gpt-4o-mini", "claude-3-5-sonnet-20241022")
+   - **Temperature**: "0.7" (creativity level)
+   - **Max Tokens**: "500" (response length)
 
-### Step 2: Display on Layout
-1. Add a **Web Embed** component to your layout
-2. Select the Experimental Code column as the source
-3. The map will display with your location and coordinates will update automatically!
+## Supported Models
 
-### Step 3: Grant Location Permission
-1. When the plugin loads, browser will prompt for location permission
-2. Click **"Allow"** to enable location tracking
-3. If permission is denied, click **"Request Permission"** button to try again
-4. Coordinates will start updating automatically!
+### OpenAI Models
+- `gpt-4o` - Latest GPT-4
+- `gpt-4o-mini` - Fast and affordable
+- `gpt-4-turbo` - Previous GPT-4
+- `gpt-3.5-turbo` - Fast and cheap
 
-### ⚠️ Important: Iframe Permission Issue
-
-**Why the Vercel app works but Glide plugin doesn't?**
-- **Vercel app**: Runs in top-level window → Browser allows geolocation ✅
-- **Glide plugin**: Runs in iframe → Browser may block geolocation (security) ⚠️
-
-**Solution:**
-1. **Try the "Request Permission" button** - This often works
-2. **Check browser settings** - Allow location for the Glide app domain
-3. **Use HTTPS** - Geolocation requires secure connection
-4. **Check iframe permissions** - Some browsers require `allow="geolocation"` attribute on the iframe (Glide should handle this automatically)
-
-**If it still doesn't work:**
-- The plugin will show a helpful error message
-- Try accessing the plugin URL directly (not in Glide iframe)
-- Consider using Glide's native "Get Current Location" action as an alternative
-
-### Step 4: Use Coordinates in Glide (Optional)
-1. The plugin displays coordinates in the Web Embed component
-2. Coordinates are also sent to Glide via postMessage (if you need to capture them)
-3. Use coordinates for mapping, calculations, or display
-
-## Parameters
-
-- **useBrowserGeolocation** (string): Enable browser geolocation - `"true"` (default) or `"false"`
-- **outputFormat** (string): Output format - `"lat,lng"` (default), `"lng,lat"`, or `"json"`
-- **updateInterval** (string): Update interval in milliseconds - `"1000"` (1 second), `"5000"` (5 seconds), etc.
-
-## Output Formats
-
-### Default: `"lat,lng"`
-Returns: `"40.7128,-74.0060"`
-
-### Format: `"lng,lat"`
-Returns: `"-74.0060,40.7128"`
-
-### Format: `"json"`
-Returns: `{"lat":40.7128,"lng":-74.0060,"latitude":40.7128,"longitude":-74.0060}`
+### Anthropic Models
+- `claude-3-5-sonnet-20241022` - Latest Claude (recommended)
+- `claude-3-5-haiku-20241022` - Fast and affordable
+- `claude-3-opus-20240229` - Most powerful
 
 ## Examples
 
-### Example 1: Extract from Starting Point
-- **Starting Point**: `[Glide Location Column]`
-- **Output Format**: `"lat,lng"`
-- **Result**: `"40.7128,-74.0060"`
+### Example 1: Text Summarization
+- **Prompt**: "Summarize this text: [Your Text Column]"
+- **Model**: "gpt-4o-mini"
+- **Temperature**: "0.3" (more factual)
+- **Result**: Summary text
 
-### Example 2: Combine Separate Lat/Lng
-- **Latitude**: `"40.7128"`
-- **Longitude**: `"-74.0060"`
-- **Output Format**: `"lat,lng"`
-- **Result**: `"40.7128,-74.0060"`
+### Example 2: Text Generation
+- **Prompt**: "Generate a product description for: [Product Name]"
+- **Model**: "claude-3-5-sonnet-20241022"
+- **Temperature**: "0.8" (more creative)
+- **Result**: Generated description
 
-### Example 3: JSON Output
-- **Starting Point**: `[Glide Location Column]`
-- **Output Format**: `"json"`
-- **Result**: `{"lat":40.7128,"lng":-74.0060,"latitude":40.7128,"longitude":-74.0060}`
+### Example 3: Text to JSON
+- **Prompt**: "Convert this to JSON: Name: John, Age: 30"
+- **Model**: "gpt-4o-mini"
+- **Temperature**: "0.0" (deterministic)
+- **Result**: `{"name": "John", "age": 30}`
 
-## Use Cases
+### Example 4: Text Classification
+- **Prompt**: "Classify this email as spam or not: [Email Content]"
+- **Model**: "gpt-4o-mini"
+- **Temperature**: "0.1" (very factual)
+- **Result**: "spam" or "not spam"
 
-- **Combine Coordinates** - Merge lat and lng into a single string
-- **Format Coordinates** - Convert between different coordinate formats
-- **Extract from Location** - Get coordinates from Glide's Starting Point column
-- **Pass to Other Functions** - Use coordinates in Glide formulas or actions
-- **Display Coordinates** - Show coordinates in text components
+## Parameters
+
+- **prompt** (string): Your AI prompt/question - Required
+- **apiKey** (string): OpenAI or Anthropic API key - Required
+- **model** (string): Model name - Default: "gpt-4o-mini"
+- **temperature** (string): 0.0-2.0 - Default: "0.7"
+- **maxTokens** (string): Maximum tokens - Default: "500"
+
+## API Keys
+
+### OpenAI API Key
+1. Go to https://platform.openai.com/api-keys
+2. Create a new API key
+3. Copy and paste into plugin parameter
+
+### Anthropic API Key
+1. Go to https://console.anthropic.com/
+2. Create a new API key
+3. Copy and paste into plugin parameter
 
 ## How It Works
 
-1. **Plugin loads** - Returns HTML that runs in browser
-2. **Browser gets location** - Uses `navigator.geolocation.getCurrentPosition()` and `watchPosition()`
-3. **Coordinates update automatically** - Updates every X seconds (based on updateInterval)
-4. **Display coordinates** - Shows coordinates in the Web Embed component
-5. **Send to Glide** - Coordinates are also sent to Glide via postMessage (optional)
+1. **Plugin receives prompt** - From Glide column
+2. **Makes API call** - Directly to OpenAI/Anthropic
+3. **Returns AI response** - Text generated by AI
+4. **Displays in Glide** - As column value
 
-## Automatic Updates
+## Use Cases
 
-**Yes, coordinates are automatically pulled from device - no manual updates needed!**
+- **Text Summarization** - Summarize long text
+- **Text Generation** - Generate content
+- **Text Classification** - Classify text into categories
+- **Text Transformation** - Convert between formats (text to JSON, etc.)
+- **Data Extraction** - Extract structured data from text
+- **Translation** - Translate text
+- **Sentiment Analysis** - Analyze text sentiment
 
-### How Automatic Updates Work:
+## Error Handling
 
-1. **Plugin loads** - HTML with JavaScript runs in browser
-2. **Browser requests location** - Asks user for location permission
-3. **User grants permission** - Location access is granted
-4. **Coordinates update automatically** - Updates every X seconds (configurable)
-5. **Display updates** - Coordinates display in real-time in the Web Embed component
+The plugin handles common errors:
+- **Missing prompt** - Returns error message
+- **Missing API key** - Returns error message
+- **API errors** - Returns API error message
+- **Network errors** - Returns network error message
 
-### No Setup Required:
+## Security Considerations
 
-- ✅ **No Glide actions needed** - Works automatically without setting up actions
-- ✅ **No automations needed** - Browser handles location tracking
-- ✅ **No manual updates** - Coordinates update automatically
-- ✅ **Real-time** - Updates continuously every X seconds
-- ✅ **Works immediately** - Just add plugin and grant permission!
+### For Testing (Current Approach)
+- ✅ API key passed as parameter
+- ⚠️ API key visible in Glide
+- ⚠️ Not secure for production
 
-### Update Frequency:
+### For Production (Recommended)
+1. **Use backend proxy** (Vercel/Netlify function)
+2. **Store API key** on server
+3. **Plugin calls proxy** instead of API directly
+4. **API key never exposed** to client
 
-- **Every 1 second** (`"1000"`) - Near real-time (good for tracking)
-- **Every 5 seconds** (`"5000"`) - Balanced (good battery life)
-- **Every 10 seconds** (`"10000"`) - Less frequent (battery efficient)
-- **Custom** - Set any interval you want (in milliseconds)
+## Next Steps for Production
 
-### Important Notes:
+To make this production-ready:
 
-- ✅ **Automatic** - No manual updates or Glide actions needed
-- ✅ **Real-time** - Updates continuously from device
-- ✅ **Requires permission** - User must grant location permission
-- ⚠️ **Browser geolocation** - Uses browser's geolocation API (may be blocked in some browsers)
-- ⚠️ **HTTPS required** - Browser geolocation requires HTTPS (or localhost)
+1. **Create Vercel/Netlify function:**
+   ```javascript
+   // api/ai-proxy.js
+   export default async function handler(req, res) {
+     const { prompt, model } = req.body;
+     // Call OpenAI/Anthropic with server-side API key
+     // Return response
+   }
+   ```
 
-## Supported Input Formats
+2. **Update plugin** to call proxy instead of API directly
+3. **Store API key** as environment variable on server
+4. **Add rate limiting** and error handling
 
-The plugin supports multiple input formats:
+## Testing
 
-- **Glide Location Column** - `{coordinates: [-74.0060, 40.7128]}`
-- **JSON String** - `'{"lat": 40.7128, "lng": -74.0060}'`
-- **Comma-Separated** - `"40.7128,-74.0060"`
-- **Separate Parameters** - `latitude: "40.7128"`, `longitude: "-74.0060"`
+Test with simple prompts first:
+- "Hello, how are you?"
+- "What is 2+2?"
+- "Summarize: This is a test..."
 
-## Technical Details
-
-- Parses multiple location formats (JSON, coordinates array, lat/lng object)
-- Handles Glide's location column format `[longitude, latitude]`
-- Validates coordinates (latitude: -90 to 90, longitude: -180 to 180)
-- Returns empty string if no valid location found
+Then try complex prompts:
+- "Analyze this text and extract key points: [Text]"
+- "Convert this to JSON: [Data]"
+- "Translate to Spanish: [Text]"
 
 Created by [@xaviigna](https://github.com/xaviigna) 🚀
+

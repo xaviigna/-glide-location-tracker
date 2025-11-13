@@ -1,23 +1,33 @@
 [
 	{
 		"kind": "column",
-		"name": "Auto Location Tracker",
-		"description": "Automatically gets location from device and displays on interactive map with coordinates. Uses OpenStreetMap (same as Vercel app) - no API keys needed! Real-time tracking with auto-centering map. Perfect for location tracking in Glide. by @xaviigna",
+		"name": "Custom AI (OpenAI/Anthropic)",
+		"description": "Use any AI model with custom prompts. Proud built by @xaviigna,
 		"author": "xaviigna",
 		"params": [
 			{
-				"name": "useBrowserGeolocation",
-				"displayName": "Enable Browser Geolocation (true/false)",
+				"name": "prompt",
+				"displayName": "Prompt (what you want the AI to do)",
 				"type": "string"
 			},
 			{
-				"name": "outputFormat",
-				"displayName": "Output Format (lat,lng, lng,lat, or json)",
+				"name": "apiKey",
+				"displayName": "API Key (OpenAI or Anthropic)",
 				"type": "string"
 			},
 			{
-				"name": "updateInterval",
-				"displayName": "Update Interval (ms) - e.g., 1000 for 1 second",
+				"name": "model",
+				"displayName": "Model (e.g., gpt-4o-mini, gpt-4, claude-3-5-sonnet-20241022)",
+				"type": "string"
+			},
+			{
+				"name": "temperature",
+				"displayName": "Temperature (0.0-2.0, creativity level)",
+				"type": "string"
+			},
+			{
+				"name": "maxTokens",
+				"displayName": "Max Tokens (maximum response length)",
 				"type": "string"
 			}
 		],
@@ -26,3 +36,4 @@
 		}
 	}
 ]
+
